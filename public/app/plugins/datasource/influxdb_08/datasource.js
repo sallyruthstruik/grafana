@@ -27,7 +27,6 @@ function (angular, _, dateMath, InfluxSeries, InfluxQueryBuilder) {
     }
 
     InfluxDatasource.prototype.query = function(options) {
-      var timeFilter = getTimeFilter(options);
 
       var promises = _.map(options.targets, function(target) {
         if (target.hide || !((target.series && target.column) || target.query)) {
@@ -38,16 +37,20 @@ function (angular, _, dateMath, InfluxSeries, InfluxQueryBuilder) {
         var queryBuilder = new InfluxQueryBuilder(target);
         var query = queryBuilder.build();
 
+        var timeFilter = getTimeFilter(options, target.time_offset);
+
         // replace grafana variables
         query = query.replace('$timeFilter', timeFilter);
         query = query.replace(/\$interval/g, (target.interval || options.interval));
+
+        console.log("Query", query);
 
         // replace templated variables
         query = templateSrv.replace(query, options.scopedVars);
 
         var alias = target.alias ? templateSrv.replace(target.alias, options.scopedVars) : '';
 
-        var handleResponse = _.partial(handleInfluxQueryResponse, alias, queryBuilder.groupByField);
+        var handleResponse = _.partial(handleInfluxQueryResponse, alias, queryBuilder.groupByField, target.time_offset);
         return this._seriesQuery(query).then(handleResponse);
 
       }, this);
@@ -243,26 +246,34 @@ function (angular, _, dateMath, InfluxSeries, InfluxQueryBuilder) {
       });
     };
 
-    function handleInfluxQueryResponse(alias, groupByField, seriesList) {
+    function handleInfluxQueryResponse(alias, groupByField, time_offset, seriesList) {
       var influxSeries = new InfluxSeries({
         seriesList: seriesList,
         alias: alias,
-        groupByField: groupByField
+        groupByField: groupByField,
+        time_offset: time_offset
       });
 
       return influxSeries.getTimeSeries();
     }
 
-    function getTimeFilter(options) {
+    function getTimeFilter(options, offset) {
+
+      if(offset === undefined){
+        offset = "";
+      }else{
+        offset = " - " + offset;
+      }
+
       var from = getInfluxTime(options.rangeRaw.from, false);
       var until = getInfluxTime(options.rangeRaw.to, true);
       var fromIsAbsolute = from[from.length-1] === 's';
 
       if (until === 'now()' && !fromIsAbsolute) {
-        return 'time > ' + from;
+        return 'time > ' + from + offset + ' and time < now() ' + offset;
       }
 
-      return 'time > ' + from + ' and time < ' + until;
+      return 'time > ' + from + offset + ' and time < ' + until + offset;
     }
 
     function getInfluxTime(date, roundUp) {

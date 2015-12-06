@@ -152,7 +152,16 @@
 				<li><a ng-click="target.fill = '0'">fill (0)</a></li>
 			</ul>
 		</li>
+
+    <li>
+      <input type="text" class="input-small tight-form-input" ng-model="target.time_offset" bs-tooltip="'Time offset'"
+             placeholder="offset" spellcheck="false" bs-typeahead="listColumns" data-min-length=0 ng-blur="get_data()">
+    </li>
+
 	</ul>
+
+
+
 	<div class="clearfix"></div>
 </div>
 

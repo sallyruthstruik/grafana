@@ -9,9 +9,51 @@ function (_) {
     this.alias = options.alias;
     this.groupByField = options.groupByField;
     this.annotation = options.annotation;
+    this.time_offset = options.time_offset;
+
+    console.log(this.time_offset, this.seriesList[0].points[0]);
+
+    if(this.time_offset !== undefined){
+      this._updateSeriesWithOffset();
+    }
+
+    console.log("After change", this.seriesList[0].points[0]);
+
   }
 
   var p = InfluxSeries.prototype;
+
+  p._updateSeriesWithOffset = function() {
+    var offsetToSecondsOffset = function(string_offset) {
+
+      var matches = string_offset.match(/(\d+)([smhd])/);
+
+      var value = parseInt(matches[1]);
+      var unit = matches[2];
+
+      var unitMapping = {
+        s: 1,
+        m: 60,
+        h: 60*60,
+        d: 24*60*60
+      };
+
+      return value * 1000 * unitMapping[unit];
+    };
+
+    var offset = offsetToSecondsOffset(this.time_offset);
+
+    this.seriesList = this.seriesList.map(function(seriesObject) {
+      seriesObject.points = seriesObject.points.map(function(point) {
+        return [point[0] + offset, point[1]];
+      });
+
+      console.log(seriesObject.points[0]);
+
+      return seriesObject;
+    });
+
+  };
 
   p.getTimeSeries = function() {
     var output = [];
@@ -60,6 +102,7 @@ function (_) {
         }
 
         output.push({ target: seriesName, datapoints: datapoints });
+
       });
     });
 
