@@ -259,7 +259,7 @@ function (angular, _, dateMath, InfluxSeries, InfluxQueryBuilder) {
 
     function getTimeFilter(options, offset) {
 
-      if(offset === undefined){
+      if(offset === undefined || offset.search(/^\d+[smhd]$/) === -1){
         offset = "";
       }else{
         offset = " - " + offset;
