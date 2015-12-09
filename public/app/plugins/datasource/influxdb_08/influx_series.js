@@ -11,13 +11,9 @@ function (_) {
     this.annotation = options.annotation;
     this.time_offset = options.time_offset;
 
-    console.log(this.time_offset, this.seriesList[0].points[0]);
-
     if(this.time_offset !== undefined){
       this._updateSeriesWithOffset();
     }
-
-    console.log("After change", this.seriesList[0].points[0]);
 
   }
 
@@ -51,8 +47,6 @@ function (_) {
       seriesObject.points = seriesObject.points.map(function(point) {
         return [point[0] + offset, point[1]];
       });
-
-      console.log(seriesObject.points[0]);
 
       return seriesObject;
     });
