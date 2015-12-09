@@ -30,6 +30,7 @@ function (angular, $, _, moment) {
       this.hideControls = data.hideControls || false;
       this.sharedCrosshair = data.sharedCrosshair || false;
       this.with_offset = data.with_offset || false;
+      this.offsets = data.offsets || ["1d", "2d", "7d"];
       this.rows = data.rows || [];
       this.time = data.time || { from: 'now-6h', to: 'now' };
       this.timepicker = data.timepicker || {};

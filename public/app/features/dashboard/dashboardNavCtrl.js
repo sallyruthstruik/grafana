@@ -67,6 +67,9 @@ function (angular, _) {
         }
 
         $scope.appEvent('alert-success', ['Dashboard saved', 'Saved as ' + clone.title]);
+
+        window.location.reload();
+
       }, $scope.handleSaveDashError);
     };
 

@@ -126,10 +126,28 @@ function (angular, _, coreModule, config) {
       return this.get('/api/dashboards/' + type + '/' + slug);
     };
 
+    this.removeOffsets = function(dash) {
+      console.log("Remove offsets");
+
+      dash.rows = dash.rows.map(function(row) {
+        row.panels = row.panels.map(function(panel) {
+          panel.targets = panel.targets.filter(function(line) {
+            return !line.time_offset;
+          });
+
+          return panel;
+        });
+
+        return row;
+      });
+    };
+
     //returns new dashboard with
     this.updateOffsetGrafs = function(dash) {
 
-      var offsetes = ["10m", "20m", "30m"];
+      var offsetes = dash.offsets;
+
+      this.removeOffsets(dash);
 
       if(dash.with_offset === true) {
         console.log("Do updating dashboard: create offsets");
@@ -165,20 +183,6 @@ function (angular, _, coreModule, config) {
 
           return row;
         });
-      }else{
-        console.log("Do updating dashboard: remove offsets");
-
-        dash.rows = dash.rows.map(function(row) {
-          row.panels = row.panels.map(function(panel) {
-            panel.targets = panel.targets.filter(function(line) {
-              return !line.time_offset;
-            });
-
-            return panel;
-          });
-
-          return row;
-        });
       }
 
     };
@@ -193,7 +197,8 @@ function (angular, _, coreModule, config) {
 
       console.log("Updated dash", dash, options);
 
-      return this.post('/api/dashboards/db/', {dashboard: dash, overwrite: options.overwrite === true});
+      return this.post('/api/dashboards/db/', {dashboard: dash, overwrite: options.overwrite === true}
+        );
     };
 
   });
