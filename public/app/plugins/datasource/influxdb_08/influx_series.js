@@ -26,6 +26,10 @@ function (_) {
   p._updateSeriesWithOffset = function() {
     var offsetToSecondsOffset = function(string_offset) {
 
+      if(!string_offset){
+        return 0;
+      }
+
       var matches = string_offset.match(/(\d+)([smhd])/);
 
       var value = parseInt(matches[1]);
