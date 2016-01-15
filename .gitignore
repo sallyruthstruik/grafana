@@ -33,3 +33,7 @@ fig.yml
 profile.cov
 grafana
 .notouch
+
+build
+docs
+public_gen.zip
