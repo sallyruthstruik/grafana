@@ -8,6 +8,7 @@ function (angular, _, coreModule, config) {
   'use strict';
 
   coreModule.service('backendSrv', function($rootScope, $http, alertSrv, $timeout) {
+  coreModule.default.service('backendSrv', function($http, alertSrv, $timeout) {
     var self = this;
 
     this.get = function(url, params) {

@@ -8,12 +8,12 @@ define([
 function (angular, _, coreModule, store, config) {
   'use strict';
 
-  coreModule.service('contextSrv', function($rootScope, $timeout) {
+  coreModule.default.service('contextSrv', function($rootScope, $timeout) {
     var self = this;
 
     function User() {
-      if (window.grafanaBootData.user) {
-        _.extend(this, window.grafanaBootData.user);
+      if (config.bootData.user) {
+        _.extend(this, config.bootData.user);
       }
     }
 

@@ -8,48 +8,49 @@ define([
 function (angular, _, $, coreModule, config) {
   'use strict';
 
-  coreModule.controller('SideMenuCtrl', function($scope, $location, contextSrv, backendSrv) {
+  coreModule.default.controller('SideMenuCtrl', function($scope, $location, contextSrv, backendSrv) {
 
     $scope.getUrl = function(url) {
       return config.appSubUrl + url;
     };
 
     $scope.setupMainNav = function() {
-      $scope.mainLinks.push({
-        text: "Dashboards",
-        icon: "fa fa-fw fa-th-large",
-        href: $scope.getUrl("/"),
-      });
-
-      if (contextSrv.hasRole('Admin')) {
+      _.each(config.bootData.mainNavLinks, function(item) {
         $scope.mainLinks.push({
-          text: "Data Sources",
-          icon: "fa fa-fw fa-database",
-          href: $scope.getUrl("/datasources"),
+          text: item.text,
+          icon: item.icon,
+          img: item.img,
+          url: $scope.getUrl(item.url)
         });
-      }
+      });
     };
 
-    $scope.loadOrgs = function() {
-      $scope.orgMenu = [];
+    $scope.openUserDropdown = function() {
+      $scope.orgMenu = [
+        {section: 'You', cssClass: 'dropdown-menu-title'},
+        {text: 'Profile', url: $scope.getUrl('/profile')},
+      ];
 
       if (contextSrv.hasRole('Admin')) {
+        $scope.orgMenu.push({section: contextSrv.user.orgName, cssClass: 'dropdown-menu-title'});
         $scope.orgMenu.push({
-          text: "Organization settings",
-          href: $scope.getUrl("/org"),
+          text: "Settings",
+          url: $scope.getUrl("/org"),
         });
         $scope.orgMenu.push({
           text: "Users",
-          href: $scope.getUrl("/org/users"),
+          url: $scope.getUrl("/org/users"),
         });
         $scope.orgMenu.push({
           text: "API Keys",
-          href: $scope.getUrl("/org/apikeys"),
+          url: $scope.getUrl("/org/apikeys"),
         });
       }
 
-      if ($scope.orgMenu.length > 0) {
-        $scope.orgMenu.push({ cssClass: 'divider' });
+      $scope.orgMenu.push({cssClass: "divider"});
+
+      if (config.allowOrgCreate) {
+        $scope.orgMenu.push({text: "New organization", icon: "fa fa-fw fa-plus", url: $scope.getUrl('/org/new')});
       }
 
       backendSrv.get('/api/user/orgs').then(function(orgs) {
@@ -67,12 +68,12 @@ function (angular, _, $, coreModule, config) {
           });
         });
 
-        if (config.allowOrgCreate) {
-          $scope.orgMenu.push({
-            text: "New Organization",
-            icon: "fa fa-fw fa-plus",
-            href: $scope.getUrl('/org/new')
-          });
+        $scope.orgMenu.push({cssClass: "divider"});
+        if (contextSrv.isGrafanaAdmin) {
+          $scope.orgMenu.push({text: "Server admin", url: $scope.getUrl("/admin/settings")});
+        }
+        if (contextSrv.isSignedIn) {
+          $scope.orgMenu.push({text: "Sign out", url: $scope.getUrl("/logout"), target: "_self"});
         }
       });
     };
@@ -120,6 +121,7 @@ function (angular, _, $, coreModule, config) {
     };
 
     $scope.init = function() {
+      $scope.showSignout = contextSrv.isSignedIn && !config['authProxyEnabled'];
       $scope.updateMenu();
       $scope.$on('$routeChangeSuccess', $scope.updateMenu);
     };
