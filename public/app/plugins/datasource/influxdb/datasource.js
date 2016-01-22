@@ -27,25 +27,29 @@ function (angular, _, dateMath, InfluxSeries, InfluxQuery) {
     this.supportMetrics = true;
 
     this.query = function(options) {
-      var timeFilter = getTimeFilter(options);
       var queryTargets = [];
       var i, y;
 
       var allQueries = _.map(options.targets, function(target) {
         if (target.hide) { return []; }
 
+        var timeFilter = getTimeFilter(options, target.time_offset);
+
         queryTargets.push(target);
 
         // build query
         var queryModel = new InfluxQuery(target);
         var query =  queryModel.render();
+
+        console.log("Query: ", query);
+
         query = query.replace(/\$interval/g, (target.interval || options.interval));
+        query = query.replace(/\$timeFilter/g, timeFilter);
         return query;
 
       }).join("\n");
 
-      // replace grafana variables
-      allQueries = allQueries.replace(/\$timeFilter/g, timeFilter);
+      console.log("All queries", allQueries);
 
       // replace templated variables
       allQueries = templateSrv.replace(allQueries, options.scopedVars);
@@ -66,7 +70,7 @@ function (angular, _, dateMath, InfluxSeries, InfluxQuery) {
             alias = templateSrv.replace(target.alias, options.scopedVars);
           }
 
-          var influxSeries = new InfluxSeries({ series: data.results[i].series, alias: alias });
+          var influxSeries = new InfluxSeries({ series: data.results[i].series, alias: alias , time_offset: target.time_offset});
 
           switch(target.resultFormat) {
             case 'table': {
@@ -185,16 +189,23 @@ function (angular, _, dateMath, InfluxSeries, InfluxQuery) {
       });
     };
 
-    function getTimeFilter(options) {
+    function getTimeFilter(options, offset) {
+
+      if(offset === undefined || offset.search(/^\d+[smhd]$/) === -1){
+        offset = "";
+      }else{
+        offset = " - " + offset;
+      }
+
       var from = getInfluxTime(options.rangeRaw.from, false);
       var until = getInfluxTime(options.rangeRaw.to, true);
       var fromIsAbsolute = from[from.length-1] === 's';
 
       if (until === 'now()' && !fromIsAbsolute) {
-        return 'time > ' + from;
+        return 'time > ' + from + offset + ' and time < now() ' + offset;
       }
 
-      return 'time > ' + from + ' and time < ' + until;
+      return 'time > ' + from + offset + ' and time < ' + until + offset;
     }
 
     function getInfluxTime(date, roundUp) {

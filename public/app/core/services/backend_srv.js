@@ -2,12 +2,11 @@ define([
   'angular',
   'lodash',
   '../core_module',
-  'app/core/config'
+  'app/core/config',
 ],
 function (angular, _, coreModule, config) {
   'use strict';
 
-  coreModule.service('backendSrv', function($rootScope, $http, alertSrv, $timeout) {
   coreModule.default.service('backendSrv', function($http, alertSrv, $timeout) {
     var self = this;
 
@@ -132,10 +131,6 @@ function (angular, _, coreModule, config) {
 
       dash.rows = dash.rows.map(function(row) {
         row.panels = row.panels.map(function(panel) {
-          if(panel.type !== "graph"){
-            return panel;
-          }
-
           panel.targets = panel.targets.filter(function(line) {
             return !line.time_offset;
           });
@@ -155,25 +150,24 @@ function (angular, _, coreModule, config) {
       this.removeOffsets(dash);
 
       if(dash.with_offset === true) {
-        console.log("Do updating dashboard: create offsets");
-
+        console.log("Do updating dashboard: create offsets", dash);
         dash.rows = dash.rows.map(function(row) {
           row.panels = row.panels.map(function(panel) {
-
-            if(panel.type !== "graph"){
-              return panel;
-            }
 
             panel.targets.map(function(line) {
 
               if(!line.time_offset){
                 offsetes.forEach(function(offset) {
                   var newLine = JSON.parse(JSON.stringify(line));
-                  newLine.alias = line.alias + '-' + offset + '-offset';
+                  if(line.alias){
+                    newLine.alias = line.alias + '-' + offset + '-offset';
+                  }
+
                   newLine.time_offset = offset;
 
                   var possibleOffsets = panel.targets.filter(function(item) {
-                    return item.alias === newLine.alias;
+
+                    return item.query === newLine.query && item.time_offset === newLine.time_offset;
                   });
 
                   if(possibleOffsets.length > 0){
@@ -199,15 +193,12 @@ function (angular, _, coreModule, config) {
     this.saveDashboard = function(dash, options) {
       options = (options || {});
 
-      console.log("Root scope", $rootScope);
       console.log("Dashboard", dash, options);
 
       this.updateOffsetGrafs(dash);
 
       console.log("Updated dash", dash, options);
-
-      return this.post('/api/dashboards/db/', {dashboard: dash, overwrite: options.overwrite === true}
-        );
+      return this.post('/api/dashboards/db/', {dashboard: dash, overwrite: options.overwrite === true});
     };
 
   });

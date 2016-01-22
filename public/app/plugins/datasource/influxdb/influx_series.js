@@ -9,9 +9,50 @@ function (_, TableModel) {
     this.series = options.series;
     this.alias = options.alias;
     this.annotation = options.annotation;
+    this.time_offset = options.time_offset;
+
+    if(this.time_offset !== undefined){
+      this._updateSeriesWithOffset();
+    }
   }
 
   var p = InfluxSeries.prototype;
+
+  p._updateSeriesWithOffset = function() {
+    var offsetToSecondsOffset = function(string_offset) {
+
+      if(!string_offset){
+        return 0;
+      }
+
+      var matches = string_offset.match(/(\d+)([smhd])/);
+
+      var value = parseInt(matches[1]);
+      var unit = matches[2];
+
+      var unitMapping = {
+        s: 1,
+        m: 60,
+        h: 60*60,
+        d: 24*60*60
+      };
+
+      return value * 1000 * unitMapping[unit];
+    };
+
+    var offset = offsetToSecondsOffset(this.time_offset);
+
+    console.log(this.time_offset, this.series);
+
+    this.seriesList = this.series.map(function(seriesObject) {
+      seriesObject.values = seriesObject.values.map(function(point) {
+        return [point[0] + offset, point[1]];
+      });
+
+      return seriesObject;
+    });
+
+  };
 
   p.getTimeSeries = function() {
     var output = [];
@@ -41,6 +82,10 @@ function (_, TableModel) {
           seriesName = seriesName + ' {' + tags.join(', ') + '}';
         }
 
+        if(self.alias === undefined && self.time_offset){
+          seriesName = seriesName + '-' + self.time_offset + '-offset';
+        }
+
         var datapoints = [];
         if (series.values) {
           for (i = 0; i < series.values.length; i++) {
@@ -51,6 +96,8 @@ function (_, TableModel) {
         output.push({ target: seriesName, datapoints: datapoints});
       }
     });
+
+    console.log("getTimeSeries", output);
 
     return output;
   };

@@ -133,6 +133,8 @@ function (angular, _, $) {
           for (i = 0; i < seriesList.length; i++) {
             var series = seriesList[i];
 
+            console.log("Legend series", series);
+
             // ignore empty series
             if (panel.legend.hideEmpty && series.allIsNull) {
               continue;
