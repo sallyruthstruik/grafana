@@ -10,10 +10,13 @@ function (_, TableModel) {
     this.alias = options.alias;
     this.annotation = options.annotation;
     this.time_offset = options.time_offset;
+    this.auto_created = options.auto_created || false;
 
     if(this.time_offset !== undefined){
       this._updateSeriesWithOffset();
     }
+
+    console.log("Initialized new Influx series", this);
   }
 
   var p = InfluxSeries.prototype;
@@ -83,7 +86,9 @@ function (_, TableModel) {
         }
 
         if(self.alias === undefined && self.time_offset){
-          seriesName = seriesName + '-' + self.time_offset + '-offset';
+          console.log("Create name", seriesName, self.time_offset, self.auto_created,
+            seriesName + '-' + self.time_offset + (self.auto_created?'-offset':''));
+          seriesName = seriesName + '-' + self.time_offset + (self.auto_created?'-offset':'');
         }
 
         var datapoints = [];

@@ -70,7 +70,8 @@ function (angular, _, dateMath, InfluxSeries, InfluxQuery) {
             alias = templateSrv.replace(target.alias, options.scopedVars);
           }
 
-          var influxSeries = new InfluxSeries({ series: data.results[i].series, alias: alias , time_offset: target.time_offset});
+          var influxSeries = new InfluxSeries({ series: data.results[i].series, alias: alias , time_offset: target.time_offset,
+            auto_created: target.auto_created});
 
           switch(target.resultFormat) {
             case 'table': {

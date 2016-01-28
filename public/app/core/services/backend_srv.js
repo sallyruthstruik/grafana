@@ -132,7 +132,10 @@ function (angular, _, coreModule, config) {
       dash.rows = dash.rows.map(function(row) {
         row.panels = row.panels.map(function(panel) {
           panel.targets = panel.targets.filter(function(line) {
-            return !line.time_offset;
+            if(line.auto_created) {
+              return !line.time_offset;
+            }
+            return true;
           });
 
           return panel;
@@ -154,6 +157,9 @@ function (angular, _, coreModule, config) {
         dash.rows = dash.rows.map(function(row) {
           row.panels = row.panels.map(function(panel) {
 
+            if(panel.type !== "graph"){
+              return panel;
+            }
             panel.targets.map(function(line) {
 
               if(!line.time_offset){
@@ -164,6 +170,7 @@ function (angular, _, coreModule, config) {
                   }
 
                   newLine.time_offset = offset;
+                  newLine.auto_created = true;
 
                   var possibleOffsets = panel.targets.filter(function(item) {
 

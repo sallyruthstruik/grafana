@@ -64,7 +64,7 @@ function (angular, _) {
         $scope.appEvent('alert-success', ['Dashboard saved', 'Saved as ' + clone.title]);
 
         //force refresh whole page
-        window.location.href = window.location.href;
+        //window.location.href = window.location.href;
       }, $scope.handleSaveDashError);
     };
 
@@ -87,7 +87,7 @@ function (angular, _) {
 
         $scope.appEvent('alert-success', ['Dashboard saved', 'Saved as ' + clone.title]);
 
-        window.location.reload();
+        //window.location.reload();
 
       }, $scope.handleSaveDashError);
     };
