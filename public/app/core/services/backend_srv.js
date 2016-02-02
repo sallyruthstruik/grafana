@@ -131,6 +131,11 @@ function (angular, _, coreModule, config) {
 
       dash.rows = dash.rows.map(function(row) {
         row.panels = row.panels.map(function(panel) {
+
+          if(panel.type !== "graph"){
+            return panel;
+          }
+
           panel.targets = panel.targets.filter(function(line) {
             if(line.auto_created) {
               return !line.time_offset;
