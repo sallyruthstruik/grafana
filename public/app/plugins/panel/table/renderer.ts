@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import moment from 'moment';
 import kbn from 'app/core/utils/kbn';
+import * as dateMath from 'app/core/utils/datemath';
 
 export class TableRenderer {
   formatters: any[];
@@ -43,11 +44,24 @@ export class TableRenderer {
     }
   }
 
-  getColorForValue(value, style) {
+  getColorForDate(value, style) {
     if (!style.thresholds) {
       return null;
     }
+    for (var i = 0; i < style.thresholds.length; i++) {
+      let threshold_moment = dateMath.parse(`now-${style.thresholds[i]}`).unix() * 1000;
+      if (value >= threshold_moment) {
+        return style.colors[i];
+      }
+    }
+    return _.last(style.colors);
+  }
 
+  getColorForValue(value, style) {
+    console.log(value, style);
+    if (!style.thresholds) {
+      return null;
+    }
     for (var i = style.thresholds.length; i > 0; i--) {
       if (value >= style.thresholds[i - 1]) {
         return style.colors[i];
@@ -96,6 +110,11 @@ export class TableRenderer {
         if (this.isUtc) {
           date = date.utc();
         }
+
+        if (column.style.colorMode) {
+          this.colorState[column.style.colorMode] = this.getColorForDate(v, column.style);
+        }
+
         return date.format(column.style.dateFormat);
       };
     }
