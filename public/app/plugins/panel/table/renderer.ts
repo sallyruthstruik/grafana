@@ -44,6 +44,19 @@ export class TableRenderer {
     }
   }
 
+  getColorForValue(value, style) {
+    if (!style.thresholds) {
+      return null;
+    }
+
+    for (var i = style.thresholds.length; i > 0; i--) {
+      if (value >= style.thresholds[i - 1]) {
+        return style.colors[i];
+      }
+    }
+    return _.first(style.colors);
+  }
+
   getColorForDate(value, style) {
     if (!style.thresholds) {
       return null;
@@ -55,19 +68,6 @@ export class TableRenderer {
       }
     }
     return _.last(style.colors);
-  }
-
-  getColorForValue(value, style) {
-    console.log(value, style);
-    if (!style.thresholds) {
-      return null;
-    }
-    for (var i = style.thresholds.length; i > 0; i--) {
-      if (value >= style.thresholds[i - 1]) {
-        return style.colors[i];
-      }
-    }
-    return _.first(style.colors);
   }
 
   defaultCellFormatter(v, style) {
